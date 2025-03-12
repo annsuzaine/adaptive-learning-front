@@ -1,251 +1,273 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Poppins } from "next/font/google";
-import { LogIn, UserPlus, MailCheck } from "lucide-react";
+import { LogIn, Mail, Lock } from "lucide-react";
+import { signInWithEmailAndPassword, auth } from "@/lib/firebase";
 
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
+// Configure Poppins font with custom weights
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export default function StudentLogin() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const [forgotError, setForgotError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Track mouse movement for subtle interactive elements
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setLoginError("Please fill in all fields");
       return;
     }
-    setLoginError("");
-    // Simulate login API call
-    setIsLoading(true);
-    setTimeout(() => {
-      router.push("/student/dashboard");
-      setIsLoading(false);
-    }, 1000);
-  };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotEmail) {
-      setForgotError("Please enter your email address");
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setLoginError("Please enter a valid email address.");
       return;
     }
-    setForgotError("");
+
+    // Password length validation
+    if (password.length < 8) {
+      setLoginError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    setLoginError("");
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      // Firebase login
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // Store student name (in a real app, this would come from the user profile)
+      localStorage.setItem("studentName", "Ann");
+      
+      // Redirect to Dashboard
+      router.push("/student/dashboard");
+    } catch (err) {
+      setLoginError("Invalid email or password");
+    } finally {
       setIsLoading(false);
-      setResetSent(true);
-      setTimeout(() => {
-        setIsForgotModalOpen(false);
-        setResetSent(false);
-      }, 2000);
-    }, 1500);
+    }
+  };
+
+  // Clean, minimalist animated background
+  const CleanBackground = () => (
+    <>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="absolute inset-0 opacity-10">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(99, 102, 241, 0.3)" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#smallGrid)" />
+          </svg>
+        </div>
+
+        {[...Array(4)].map((_, i) => (
+          <motion.div 
+            key={`orb-${i}`}
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: [0.05, 0.08, 0.05],
+              y: [0, -15, 0],
+            }}
+            transition={{ 
+              duration: 10 + i * 2, 
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 1.5,
+            }}
+            className="absolute rounded-full blur-2xl"
+            style={{ 
+              top: `${20 + (i * 20)}%`, 
+              left: `${15 + (i * 25)}%`,
+              width: `${150 + i * 30}px`,
+              height: `${150 + i * 30}px`,
+              background: i % 2 === 0 ? 'rgba(99, 102, 241, 0.06)' : 'rgba(168, 85, 247, 0.06)',
+            }}
+          />
+        ))}
+
+        <motion.div 
+          className="absolute w-64 h-64 rounded-full pointer-events-none opacity-10"
+          style={{
+            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(255, 255, 255, 0) 70%)',
+          }}
+          animate={{
+            x: mousePosition.x - 150,
+            y: mousePosition.y - 150,
+          }}
+          transition={{
+            type: "spring",
+            damping: 25,
+            stiffness: 50,
+            mass: 0.5
+          }}
+        />
+      </div>
+    </>
+  );
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.98 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        duration: 0.5, 
+        ease: [0.23, 1.02, 0.36, 1],
+        delayChildren: 0.2,
+        staggerChildren: 0.15 
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.98, 
+      transition: { duration: 0.4 }
+    }
   };
 
   return (
-    <div className={`flex items-center justify-center min-h-screen px-6 ${poppins.className}`}
-      style={{
-        background: "radial-gradient(circle at center, #eef2ff 0%, #c7d2fe 100%)"
-      }}
-    >
-      {/* Login Card */}
+    <div className={`flex items-center justify-center min-h-screen ${poppins.className}`}>
+      {/* Clean animated background */}
+      <CleanBackground />
+
+      {/* Glass-morphism Login Card */}
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative p-10 bg-white/90 backdrop-blur-2xl shadow-2xl rounded-3xl border border-white/30 w-full max-w-md mx-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/80 max-w-md w-full mx-4 z-10 overflow-hidden"
       >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center mb-6"
-        >
-          <LogIn className="w-12 h-12 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600" />
-        </motion.div>
+        {/* Subtle card highlight */}
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/40 rounded-full blur-3xl"></div>
 
-        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
-          Student Login
-        </h1>
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          {loginError && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-red-500 text-sm text-center"
-            >
-              {loginError}
-            </motion.p>
-          )}
-
-          <div className="relative">
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 pt-6 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-gray-900 placeholder-transparent peer"
-            />
-            <label
-              htmlFor="email"
-              className="absolute left-4 top-1 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-sm"
-            >
-              Email Address
-            </label>
+        <div className="relative z-10">
+          {/* Simple and elegant icon */}
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-indigo-500 flex items-center justify-center shadow-md">
+              <LogIn className="w-8 h-8 text-white" />
+            </div>
           </div>
 
-          <div className="relative">
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 pt-6 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-gray-900 placeholder-transparent peer"
-            />
-            <label
-              htmlFor="password"
-              className="absolute left-4 top-1 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-sm"
-            >
-              Password
-            </label>
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-bold py-4 rounded-full shadow-xl relative overflow-hidden"
+          {/* Login Title */}
+          <motion.h1
+            className="text-3xl font-bold text-center mb-8 text-gray-800"
           >
-            {isLoading ? (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="inline-flex items-center justify-center"
+            Student Login
+          </motion.h1>
+
+          {/* Error Message */}
+          <AnimatePresence mode="wait">
+            {loginError && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-6 relative"
               >
-                <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Authenticating...
-              </motion.span>
-            ) : (
-              "Login"
+                <div className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <span>{loginError}</span>
+                </div>
+                <button 
+                  onClick={() => setLoginError("")} 
+                  className="absolute top-2 right-2 text-red-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </motion.div>
             )}
-          </motion.button>
-        </form>
+          </AnimatePresence>
 
-        <div className="mt-6 text-sm text-center space-y-4">
-          <button
-            onClick={() => setIsForgotModalOpen(true)}
-            className="text-indigo-600 hover:text-fuchsia-600 transition-colors duration-200"
-          >
-            Forgot Password?
-          </button>
-          <div className="text-gray-600">
-            Don't have an account?{" "}
-            <button
-              onClick={() => router.push("/student/signup")}
-              className="text-fuchsia-600 hover:text-indigo-600 transition-colors duration-200"
+          {/* Login Form */}
+          <motion.form onSubmit={handleLogin} className="space-y-6">
+            <div className="relative">
+              <label className="absolute left-4 top-2 text-xs text-gray-500 font-medium">Email Address</label>
+              <div className="flex items-center">
+                <Mail className="absolute left-4 top-9 w-5 h-5 text-indigo-500/70" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-4 pt-6 pl-12 rounded-lg bg-white/80 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  placeholder="Enter your email"
+                  aria-required="true"
+                />
+              </div>
+            </div>
+
+            <div className="relative">
+              <label className="absolute left-4 top-2 text-xs text-gray-500 font-medium">Password</label>
+              <div className="flex items-center">
+                <Lock className="absolute left-4 top-9 w-5 h-5 text-indigo-500/70" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-4 pt-6 pl-12 rounded-lg bg-white/80 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"
+                  placeholder="Enter your password"
+                  aria-required="true"
+                />
+              </div>
+            </div>
+
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-white font-semibold py-4 rounded-lg shadow-md relative overflow-hidden flex justify-center items-center gap-2"
             >
-              Sign Up
-            </button>
-          </div>
+              {isLoading ? "Logging In..." : "Login"}
+            </motion.button>
+          </motion.form>
+
+          {/* Links for Forgot Password and Sign Up */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-center mt-8 text-sm space-y-2"
+          >
+            <div>
+              <a href="#" className="text-indigo-600 font-medium hover:text-indigo-500 transition-colors duration-200">
+                Forgot Password?
+              </a>
+            </div>
+            <div>
+              <span className="text-gray-600">Don't have an account? </span>
+              <a href="/student/signup" className="text-indigo-600 font-medium hover:text-indigo-500 transition-colors duration-200">
+                Sign Up
+              </a>
+            </div>
+          </motion.div>
         </div>
       </motion.div>
-
-      {/* Forgot Password Modal */}
-      <AnimatePresence>
-        {isForgotModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.8, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 20 }}
-              className="bg-white/90 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl border border-white/30 w-full max-w-md mx-4"
-            >
-              <div className="flex justify-center mb-6">
-                <MailCheck className="w-12 h-12 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600" />
-              </div>
-
-              <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Password Recovery
-              </h2>
-
-              {resetSent ? (
-                <div className="text-center py-6">
-                  <p className="text-green-600 mb-4">Reset instructions sent to your email!</p>
-                  <button
-                    onClick={() => setIsForgotModalOpen(false)}
-                    className="text-indigo-600 hover:text-fuchsia-600 transition-colors duration-200"
-                  >
-                    Return to Login
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleForgotPassword} className="space-y-6">
-                  <div className="relative">
-                    <input
-                      type="email"
-                      id="forgotEmail"
-                      value={forgotEmail}
-                      onChange={(e) => setForgotEmail(e.target.value)}
-                      className="w-full p-4 pt-6 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 text-gray-900 placeholder-transparent peer"
-                    />
-                    <label
-                      htmlFor="forgotEmail"
-                      className="absolute left-4 top-1 text-gray-600 text-sm transition-all duration-300 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-sm"
-                    >
-                      Email Address
-                    </label>
-                  </div>
-
-                  {forgotError && (
-                    <p className="text-red-500 text-sm text-center">{forgotError}</p>
-                  )}
-
-                  <div className="flex justify-between gap-4">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
-                      onClick={() => setIsForgotModalOpen(false)}
-                      className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200 py-3 rounded-lg transition"
-                    >
-                      Cancel
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      type="submit"
-                      disabled={isLoading}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white py-3 rounded-lg relative overflow-hidden"
-                    >
-                      {isLoading ? "Sending..." : "Reset Password"}
-                    </motion.button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

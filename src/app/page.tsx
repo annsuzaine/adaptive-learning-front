@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Poppins } from "next/font/google";
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
+import { ReactTyped } from "react-typed";
 
-// Import Poppins font for better readability
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -25,63 +25,86 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div
-      className={`flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-white ${poppins.className}`}
-    >
-      {/* Subtle Background Gradient & Floating Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(3)].map((_, i) => (
+    <div className={`relative flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 ${poppins.className}`}>
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-indigo-50" />
+      </div>
+
+      {/* Decorative Patterns */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Decorative Circles */}
+        {[...Array(5)].map((_, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{
-              opacity: [0.05, 0.1, 0.05],
-              scale: [0.9, 1.1, 0.9],
-              x: mousePosition.x * 0.01 * (i % 2 ? -1 : 1),
-              y: mousePosition.y * 0.01 * (i % 3 ? -1 : 1),
+              opacity: [0.05, 0.2, 0.05],
+              scale: [0.8, 1.1, 0.8],
+              x: [`${10 + i * 20}%`, `${40 + i * 10}%`],
+              y: [`${20 + i * 20}%`, `${60 - i * 15}%`],
             }}
             transition={{
-              duration: 6 + i * 1.2,
+              duration: 8 + i * 1.5,
               repeat: Infinity,
               ease: "easeInOut",
             }}
             className={`absolute rounded-full blur-2xl 
-              ${i % 2 === 0 ? "bg-blue-200" : "bg-indigo-200"}
-              ${i % 3 === 0 ? "w-36 h-36" : "w-52 h-52"}`}
-            style={{
-              top: `${20 + (i * 20) % 50}%`,
-              left: `${(i * 30) % 70}%`,
-              filter: "blur(80px)",
-            }}
+              ${i % 2 === 0 ? "bg-blue-300/10" : "bg-indigo-300/10"}
+              w-${i % 2 === 0 ? "44" : "52"} h-${i % 2 === 0 ? "44" : "52"}`}
           />
         ))}
+
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBoMzB2MzBIMzB6TTAgMzBoMzB2MzBIMHoiIGZpbGw9IiMyMDIwMjAiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-20" />
       </div>
 
-      {/* Main Card Content */}
+      {/* Main Card with Elegant Design */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative p-10 md:p-12 bg-white/70 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 text-center max-w-2xl mx-4 overflow-hidden"
-        style={{
-          transform: `perspective(1000px) 
-                     rotateX(${(mousePosition.y - window.innerHeight / 2) * 0.003}deg) 
-                     rotateY(${-(mousePosition.x - window.innerWidth / 2) * 0.003}deg)`,
-          transition: "transform 0.1s ease-out",
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        whileHover={{
+          scale: 1.02,
+          rotateX: (mousePosition.y - window.innerHeight / 2) * 0.002,
+          rotateY: -(mousePosition.x - window.innerWidth / 2) * 0.002,
+          transition: { duration: 0.2, ease: "easeOut" },
         }}
+        className="relative p-10 md:p-12 bg-white/80 rounded-2xl shadow-lg border border-blue-100 text-center max-w-2xl mx-4 overflow-hidden z-10"
       >
-        {/* Subtle Decorative Gradients */}
-        <div className="absolute -top-24 -right-24 w-60 h-60 bg-gradient-to-br from-blue-100/10 to-transparent rounded-full blur-xl" />
-        <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-gradient-to-br from-indigo-100/10 to-transparent rounded-full blur-xl" />
+        {/* Animated Accent Elements */}
+        <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-500/20 blur-xl" />
+        <div className="absolute -bottom-10 -left-10 w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-400/20 to-blue-500/20 blur-xl" />
+        
+        {/* Animated Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="text-5xl md:text-6xl font-bold text-gray-800 mb-4"
+        >
+          Adaptive <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600">Learning</span>
+        </motion.h1>
 
-        <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-          Adaptive <span className="text-blue-600">Learning</span>
-        </h1>
+        {/* Typing Animated Subheading */}
+        <motion.p
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.4 }}
+          className="mt-2 text-lg text-gray-600"
+        >
+          <ReactTyped
+            strings={[
+              "Revolutionizing Education with AI",
+              "AI-powered Learning Experience",
+              "Personalized Study Paths"
+            ]}
+            typeSpeed={50}
+            backSpeed={30}
+            loop
+          />
+        </motion.p>
 
-        <p className="mt-2 text-lg text-gray-600">
-          Revolutionizing Education with AI
-        </p>
-
+        {/* Animated Divider */}
         <motion.div
           animate={{ width: ["0%", "100px", "80px"] }}
           transition={{
@@ -90,33 +113,39 @@ export default function HomePage() {
             ease: "easeOut",
             delay: 1,
           }}
-          className="h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 mx-auto my-6 rounded-full"
+          className="h-0.5 bg-gradient-to-r from-blue-400 to-indigo-500 mx-auto my-6 rounded-full"
         />
 
-        <p className="text-lg md:text-xl text-gray-600 font-light leading-relaxed max-w-xl mx-auto mb-8">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="text-lg md:text-xl text-gray-600 font-light leading-relaxed max-w-xl mx-auto mb-8"
+        >
           Personalized learning paths tailored just for you. Enhance your skills
           with AI-powered recommendations.
-        </p>
+        </motion.p>
 
-        <motion.button
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 0 25px 6px rgba(96,165,250,0.2)",
-            transition: { duration: 0.2 },
-          }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => router.push("/choose-role")}
-          className="group relative px-10 py-4 text-lg font-medium text-white rounded-full shadow-lg flex items-center justify-center mx-auto space-x-2 transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
-        >
-          <span>Get Started</span>
-          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-        </motion.button>
-
-        <div className="mt-8 flex items-center justify-center space-x-3">
-          <div className="w-2.5 h-2.5 bg-blue-300 rounded-full shadow-md" />
-          <div className="w-2.5 h-2.5 bg-indigo-300 rounded-full shadow-md" />
-          <div className="w-2.5 h-2.5 bg-sky-300 rounded-full shadow-md" />
-        </div>
+        {/* Get Started Button - Elegant & Modern */}
+        <motion.div className="flex justify-center mt-6">
+          <motion.button
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.8 }}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0px 5px 15px rgba(59, 130, 246, 0.4)",
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="relative px-12 py-4 text-lg font-medium text-white rounded-full shadow-md 
+              bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 
+              transition-all duration-300 flex items-center gap-2"
+            onClick={() => router.push("/choose-role")}
+          >
+            <span>Get Started</span>
+            <ArrowRight className="w-5 h-5" />
+          </motion.button>
+        </motion.div>
       </motion.div>
     </div>
   );
