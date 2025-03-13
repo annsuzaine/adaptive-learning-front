@@ -55,7 +55,7 @@ export default function StudentLogin() {
       await signInWithEmailAndPassword(auth, email, password);
       
       // Store student name (in a real app, this would come from the user profile)
-      localStorage.setItem("studentName", "Ann");
+      localStorage.getItem("studentName");
       
       // Redirect to Dashboard
       router.push("/student/dashboard");
